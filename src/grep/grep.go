@@ -2,6 +2,6 @@ package grep
 
 import "os"
 
-func SearchFile(flags []bool, fp *os.File) {
+func SearchFile(command string, fp *os.File) {
 
 }

@@ -14,35 +14,24 @@ import (
 func Client() {
 
 	args := os.Args
-	numFlags := flag.NFlag()
-	stringPattern := args[numFlags + 1]
+	flags := args[1:len(args)-1]
+	stringPattern := args[len(args)-1]
 
-	/*bFlag := flag.Bool("b")
-	cFlag := flag.Bool("c")
-
-	eFlag := flag.Bool("e")
-	fFlag := flag.Bool("f")
-	hFlag := flag.Bool("h")
-	iFlag := flag.Bool("i")
-	lFlag := flag.Bool("l")
-	nFlag := flag.Bool("n")
-	pFlag := flag.Bool
-	vFlag := flag.Bool("v")
-	xFlag := flag.Bool("x")
-	yFlag := flag.Bool("y")
-
-	flag.Parse()*/
-
+	command := "grep "
+	for i := 0; i < len(flags); i++ {
+		command += ("-" + flags[i] + " ")
+	}
+	command += stringPattern
 	/*create client socket and request file from other servers*/
 	//send node number to server so that it knows which it is?
 
 	for i := 1; i < 11; i++ {
-		go ConnectToServer(i)
+		go ConnectToServer(command, i)
 	}
 
 }
 
-func ConnectToServer(machineNum int) {
+func ConnectToServer(command string, machineNum int) {
 	var address bytes.Buffer
 	var fileName bytes.Buffer
 	conn, err := net.Dial("tcp", "")
@@ -51,7 +40,7 @@ func ConnectToServer(machineNum int) {
 	}
 
 	logFile := GetFile( , conn)
-	grep.SearchFile( , logFile)
+	grep.SearchFile(command, logFile)
 }
 
 func GetFile(fileName string, connection net.Conn) (logFile *os.File) {
