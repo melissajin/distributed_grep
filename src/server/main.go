@@ -1,44 +1,51 @@
-package server
+package main
 
 import (
 	"net"
+	"log"
 	"fmt"
+	//"io/ioutil"
+	//"os"
+	//"strings"
+	//"io"
 	"os"
-	"strings"
-	"io"
+	//"strings"
+	//"io"
 )
 
-func Server() {
-	ln, err := net.Listen("tcp", "")
+func main() {
+	ln, err := net.Listen("tcp", "localhost:8000")
 	if err != nil {
-
+		log.Println("Failed to connect to client\n")
 	}
+	fmt.Println("Listening to port 8000")
+
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-
+			log.Println("Failed to accept client connection\n")
 		}
-		go SendFile(conn)
+		SendFile(conn)
 		conn.Close()
+		break
 	}
 }
 
 func SendFile(connection net.Conn) {
-	var currentByte int64 = 0
-	fileBuffer := make([]byte, 1024)
+	defer connection.Close()
 
-	file, err := os.Open(strings.TrimSpace("machine.i.log"))
+	file, err := os.Open("machine.1.log")
 	if err != nil {
-
+		log.Printf("Failed to open file %s\n", "machine.1.log")
 	}
+	defer file.Close()
+	fi,_ := file.Stat()
+	size := fi.Size()
 
-	for err == nil || err != io.EOF {
-		_, err = file.ReadAt(fileBuffer, currentByte)
-		currentByte += 1024
-		connection.Write(fileBuffer)
+	fileBuffer := make([]byte, size)
 
-		file.Close()
-		connection.Close()
-	}
+	n, err := file.ReadAt(fileBuffer, 0)
+	connection.Write(fileBuffer[:n])
+
 	return
 }
