@@ -2,21 +2,20 @@ package main
 
 import (
 	"os"
-	"grep"
 	"net"
 	"strings"
 	"log"
 	"fmt"
 	"bufio"
 	"sync"
-	"bytes"
-	"io"
+	"strconv"
 )
 
 func ConnectToServer(command string, machineNum int, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	fileName := "machine.1.received.log"
+	fileName := "machine." + strconv.Itoa(machineNum) + ".log"
+	command = command + " " + fileName
 	address := "localhost:8000"
 
 	conn, err := net.Dial("tcp", address)
@@ -25,29 +24,18 @@ func ConnectToServer(command string, machineNum int, wg *sync.WaitGroup) {
 		return
 	}
 
-	logFile := GetFile(fileName, conn); if logFile == nil {
-		return
-	}
-
-	command = command + " " + fileName
-	grep.SearchFile(command)
+	fmt.Fprintf(conn, command + "\n")
+	GetResult(conn, machineNum)
 }
 
-func GetFile(fileName string, connection net.Conn) (logFile *os.File) {
+func GetResult(connection net.Conn, machineNum int) {
+	header := "grep results for machine-" + strconv.Itoa(machineNum) + ":\n"
+	grepOut, _ := bufio.NewReader(connection).ReadString('\xFF')
 
-	file, err := os.Create(fileName)
-	if err != nil {
-		log.Printf("Failed to create file %s\n", fileName)
-		return nil
-	}
-
-	var buf bytes.Buffer
-	io.Copy(&buf, connection)
-	file.WriteAt(buf.Bytes(), 0)
+	out := header + grepOut[:len(grepOut)-1]
+	fmt.Print(out)
 
 	connection.Close()
-	file.Close()
-	return file
 }
 
 func main() {

@@ -6,15 +6,15 @@ import (
 	"strings"
 )
 
-func SearchFile(command string) {
+func SearchFile(command string) []byte {
 	cmd := strings.Fields(command)
 	args := cmd[1:]
 
 	out, err := exec.Command(cmd[0], args...).Output()
 
 	if err != nil {
-		fmt.Printf("Error: %s", err)
+		fmt.Printf("Error executing grep: %s", err)
 	}
 	
-	fmt.Printf("%s", out)
+	return out
 }

@@ -4,13 +4,8 @@ import (
 	"net"
 	"log"
 	"fmt"
-	//"io/ioutil"
-	//"os"
-	//"strings"
-	//"io"
-	"os"
-	//"strings"
-	//"io"
+	"bufio"
+	"grep"
 )
 
 func main() {
@@ -20,32 +15,21 @@ func main() {
 	}
 	fmt.Println("Listening to port 8000")
 
+	conn, err := ln.Accept()
+	if err != nil {
+		log.Println("Failed to accept client connection\n")
+	}
+
 	for {
-		conn, err := ln.Accept()
-		if err != nil {
-			log.Println("Failed to accept client connection\n")
-		}
-		SendFile(conn)
+		command, _ := bufio.NewReader(conn).ReadString('\n')
+		grepOut := grep.SearchFile(command)
+		SendOutput(conn, grepOut)
 		conn.Close()
 		break
 	}
 }
 
-func SendFile(connection net.Conn) {
-	defer connection.Close()
-
-	file, err := os.Open("machine.1.log")
-	if err != nil {
-		log.Printf("Failed to open file %s\n", "machine.1.log")
-	}
-	defer file.Close()
-	fi,_ := file.Stat()
-	size := fi.Size()
-
-	fileBuffer := make([]byte, size)
-
-	n, err := file.ReadAt(fileBuffer, 0)
-	connection.Write(fileBuffer[:n])
-
-	return
+func SendOutput(connection net.Conn, grepOut []byte) {
+	out := string(grepOut)
+	fmt.Fprintf(connection, out + "\xFF")
 }
