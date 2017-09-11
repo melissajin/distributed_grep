@@ -11,12 +11,17 @@ import (
 	"strconv"
 )
 
-func ConnectToServer(command string, machineNum int, wg *sync.WaitGroup) {
+func ConnectToServer(command string, machineNum string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	fileName := "machine." + strconv.Itoa(machineNum) + ".log"
+	fileName := "machine." + machineNum + ".log"
 	command = command + " " + fileName
-	address := "localhost:8000"
+
+	if(len(machineNum) == 1) {
+		machineNum = "0" + machineNum
+	}
+
+	address := "fa17-cs425-g46-" + machineNum + ".cs.illinois.edu:8000"
 
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
@@ -28,8 +33,8 @@ func ConnectToServer(command string, machineNum int, wg *sync.WaitGroup) {
 	GetResult(conn, machineNum)
 }
 
-func GetResult(connection net.Conn, machineNum int) {
-	header := "grep results for machine-" + strconv.Itoa(machineNum) + ":\n"
+func GetResult(connection net.Conn, machineNum string) {
+	header := "grep results for machine-" + machineNum + ":\n"
 	grepOut, _ := bufio.NewReader(connection).ReadString('\xFF')
 
 	out := header + grepOut[:len(grepOut)-1]
@@ -55,9 +60,9 @@ func main() {
 	}
 
 	var wg sync.WaitGroup
-	for i := 1; i < 2; i++ {
+	for i := 1; i < 11; i++ {
 		wg.Add(1)
-		go ConnectToServer(command, i, &wg)
+		go ConnectToServer(command, strconv.Itoa(i), &wg)
 	}
 
 	wg.Wait()
