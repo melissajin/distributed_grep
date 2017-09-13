@@ -16,18 +16,16 @@ func main() {
 	}
 	fmt.Println("Listening to port 8000")
 
-	conn, err := ln.Accept()
-	fmt.Println("Accepted connection")
-	if err != nil {
-		log.Println("Failed to accept client connection\n")
-	}
-
 	for {
+		conn, err := ln.Accept()
+		fmt.Println("Accepted connection")
+		if err != nil {
+			log.Println("Failed to accept client connection\n")
+		}
 		command, _ := bufio.NewReader(conn).ReadString('\n')
 		grepOut := grep.SearchFile(command)
 		SendOutput(conn, grepOut)
 		conn.Close()
-		break
 	}
 }
 
