@@ -25,7 +25,6 @@ func main() {
 		command, _ := bufio.NewReader(conn).ReadString('\n')
 		grepOut := grep.SearchFile(command)
 		SendOutput(conn, grepOut)
-		conn.Close()
 	}
 }
 
