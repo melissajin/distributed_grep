@@ -15,7 +15,7 @@ func SearchFile(command string) string {
 
 	out, err := exec.Command(cmd[0], args...).Output()
 	if err != nil {
-		fmt.Printf("Error executing grep: %s", err)
+		fmt.Printf("Error executing grep: %s\n", err)
 	}
 
 	var buffer bytes.Buffer

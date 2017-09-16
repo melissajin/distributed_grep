@@ -51,13 +51,14 @@ then
 	do
 		echo "Running server $node ..."
 		COMMAND=''
-		COMMAND=$COMMAND"if [ ! -e $DIRECTORY/src/machine.$counter.log ]; then
-			wget \"https://courses.engr.illinois.edu/cs425/fa2017/CS425_MP1_Demo_Logs_FA17/vm$counter.log\" -o \"machine.$counter.log\"
-		fi;"
 		COMMAND=$COMMAND" export PATH=$PATH:/usr/local/go/bin;"
 	    COMMAND=$COMMAND" export GOPATH=\"$HOME/CS425-MP1\";"
-	    COMMAND=$COMMAND" rm vm*;"
 		COMMAND=$COMMAND" cd CS425-MP1/src;"
+		COMMAND=$COMMAND"if [ ! -e $DIRECTORY/src/machine.$counter.log ]; then
+			wget \"https://courses.engr.illinois.edu/cs425/fa2017/CS425_MP1_Demo_Logs_FA17/vm$counter.log\" >/dev/null
+			mv vm$counter.log \"machine.$counter.log\"
+			rm vm*
+		fi;"
 		COMMAND=$COMMAND" fuser -k 8000/tcp;"
 		COMMAND=$COMMAND" nohup go run server/main.go > /dev/null 2>&1 &"
 
@@ -74,7 +75,9 @@ then
 		COMMAND=''
 		COMMAND=$COMMAND" export PATH=$PATH:/usr/local/go/bin;"
 	    COMMAND=$COMMAND" export GOPATH=\"$HOME/CS425-MP1\";"
-		COMMAND=$COMMAND" fuser -k 8000/tcp"
+		COMMAND=$COMMAND" fuser -k 8000/tcp;"
+		COMMAND=$COMMAND" cd CS425-MP1/src;"
+		COMMAND=$COMMAND" rm grep_*;"
 
 		ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $node "
 	            $COMMAND"
