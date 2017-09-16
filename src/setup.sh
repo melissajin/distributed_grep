@@ -30,9 +30,9 @@ then
 	    if [ ! -d \"$DIRECTORY\" ]; then
 	    	git clone https://gitlab.engr.illinois.edu/tkao4/CS425-MP1.git
 	    else
-	    	git init
+	    	cd CS425-MP1/src
 	    	git pull https://gitlab.engr.illinois.edu/tkao4/CS425-MP1.git
-	    fi;"
+	    fi; "
 	    COMMAND=$COMMAND"
 	    if [ ! -e \"$GOPKG\" ]; then
 		    wget https://storage.googleapis.com/golang/go1.7.3.linux-amd64.tar.gz;
@@ -51,9 +51,9 @@ then
 	do
 		echo "Running server $node ..."
 		COMMAND=''
-		if [ ! -e $DIRECTORY/src/machine.$counter.log ]; then
-			COMMAND=$COMMAND" wget \"https://courses.engr.illinois.edu/cs425/fa2017/CS425_MP1_Demo_Logs_FA17/vm$counter.log\" -o \"machine.$counter.log\";"
-		fi
+		COMMAND=$COMMAND"if [ ! -e $DIRECTORY/src/machine.$counter.log ]; then
+			wget \"https://courses.engr.illinois.edu/cs425/fa2017/CS425_MP1_Demo_Logs_FA17/vm$counter.log\" -o \"machine.$counter.log\"
+		fi;"
 		COMMAND=$COMMAND" export PATH=$PATH:/usr/local/go/bin;"
 	    COMMAND=$COMMAND" export GOPATH=\"$HOME/CS425-MP1\";"
 	    COMMAND=$COMMAND" rm vm*;"

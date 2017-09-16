@@ -35,8 +35,8 @@ func ConnectToServer(args string, machineNum string, wg *sync.WaitGroup) {
 		machineNum = "0" + machineNum
 	}
 
-	// address := "fa17-cs425-g46-" + machineNum + ".cs.illinois.edu:8000"
-	address := "localhost:8000"
+	address := "fa17-cs425-g46-" + machineNum + ".cs.illinois.edu:8000"
+	//address := "localhost:8000"
 
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
@@ -84,7 +84,7 @@ func main() {
 
 	start := time.Now()
 	var wg sync.WaitGroup
-	for i := 1; i < 2; i++ {
+	for i := 1; i < 11; i++ {
 		wg.Add(1)
 		go ConnectToServer(args, strconv.Itoa(i), &wg)
 	}
