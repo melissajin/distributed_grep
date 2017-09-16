@@ -1,33 +1,50 @@
 package main
 
 import (
-	"os"
-	"net"
-	"strings"
-	"log"
-	"fmt"
 	"bufio"
-	"sync"
+	"fmt"
+	"log"
+	"net"
+	"os"
 	"strconv"
+	"strings"
+	"sync"
+	"time"
 )
 
-func ConnectToServer(command string, machineNum string, wg *sync.WaitGroup) {
+type Counter struct {
+    mu  sync.Mutex
+    x   int
+}
+
+var lineCount Counter
+
+func (c *Counter) Add(x int) {
+    c.mu.Lock()
+    c.x += x
+    c.mu.Unlock()
+}
+
+func ConnectToServer(args string, machineNum string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	fileName := "machine." + machineNum + ".log"
-	command = command + " " + fileName
+	command := "grep " + args + " " + fileName
 
 	if(len(machineNum) == 1) {
 		machineNum = "0" + machineNum
 	}
 
-	address := "fa17-cs425-g46-" + machineNum + ".cs.illinois.edu:8000"
+	// address := "fa17-cs425-g46-" + machineNum + ".cs.illinois.edu:8000"
+	address := "localhost:8000"
 
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
-		log.Printf("Failed to connect to machine %d\n", machineNum)
+		log.Printf("Failed to connect to machine %s\n", machineNum)
 		return
 	}
+
+	defer conn.Close()
 
 	fmt.Fprintf(conn, command + "\n")
 	GetResult(conn, machineNum)
@@ -38,32 +55,44 @@ func GetResult(connection net.Conn, machineNum string) {
 	grepOut, _ := bufio.NewReader(connection).ReadString('\xFF')
 
 	out := header + grepOut[:len(grepOut)-1]
-	fmt.Print(out)
+	fields := strings.Fields(grepOut)
+	numLines := fields[len(fields)-2]
+	num, _ := strconv.Atoi(numLines)
+	lineCount.Add(num)
+	
+	WriteToFile(out, machineNum)
+	fmt.Printf("Lines on machine %s: %s\n", machineNum, numLines)
+}
 
-	connection.Close()
+func WriteToFile(grepOut string, machineNum string) {
+	fileHandle, err := os.Create("grep_" + machineNum + "_out.txt")
+	if err != nil {
+	    log.Printf("Failed create output file for machine %s\n", machineNum)
+	    return
+	}
+
+	writer := bufio.NewWriter(fileHandle)
+	defer fileHandle.Close()
+
+	fmt.Fprintln(writer, grepOut);
+	writer.Flush()
 }
 
 func main() {
 
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Enter command: ")
-	command, _ := reader.ReadString('\n')
-	command = strings.Replace(command, "\n", "", -1)
+	args := strings.Join(os.Args[1:], " ")
 
-	fields := strings.Fields(command)
-	if len(fields) < 2 {
-		fmt.Println("Command invalid")
-		return
-	} else if fields[0] != "grep" {
-		fmt.Println("Command must be grep")
-		return
-	}
-
+	start := time.Now()
 	var wg sync.WaitGroup
-	for i := 1; i < 11; i++ {
+	for i := 1; i < 2; i++ {
 		wg.Add(1)
-		go ConnectToServer(command, strconv.Itoa(i), &wg)
+		go ConnectToServer(args, strconv.Itoa(i), &wg)
 	}
-
 	wg.Wait()
+
+	end := time.Now()
+	elapsed := end.Sub(start)
+
+	fmt.Println(elapsed)
+	fmt.Printf("Total line count: %d\n", lineCount.x)
 }

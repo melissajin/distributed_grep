@@ -1,20 +1,30 @@
 package grep
 
 import (
-	 "os/exec"
+	"bytes"
+	"os/exec"
 	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 )
 
-func SearchFile(command string) []byte {
+func SearchFile(command string) string {
 	cmd := strings.Fields(command)
 	args := cmd[1:]
 
 	out, err := exec.Command(cmd[0], args...).Output()
-
 	if err != nil {
 		fmt.Printf("Error executing grep: %s", err)
 	}
+
+	var buffer bytes.Buffer
+	buffer.WriteString(string(out))
+
+	re, _ := regexp.Compile("\n")
+	numLines := len(re.FindAllString(buffer.String(), -1))
+	buffer.WriteString(strconv.Itoa(numLines))
+	buffer.WriteString("\n")
 	
-	return out
+	return buffer.String()
 }

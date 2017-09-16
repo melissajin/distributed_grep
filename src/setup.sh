@@ -26,11 +26,18 @@ then
 		echo "Setting up $node ..."
 	    COMMAND=''
 
-	    if [ ! -e $DIRECTORY ]; then
-	    	COMMAND=$COMMAND" git clone https://gitlab.engr.illinois.edu/tkao4/CS425-MP1.git;"
-	    fi
-	    COMMAND=$COMMAND" wget https://storage.googleapis.com/golang/go1.7.3.linux-amd64.tar.gz;"
-	    COMMAND=$COMMAND" sudo tar -C /usr/local -xvzf go1.7.3.linux-amd64.tar.gz;"
+	    COMMAND=$COMMAND"
+	    if [ ! -d \"$DIRECTORY\" ]; then
+	    	git clone https://gitlab.engr.illinois.edu/tkao4/CS425-MP1.git
+	    else
+	    	git init
+	    	git pull https://gitlab.engr.illinois.edu/tkao4/CS425-MP1.git
+	    fi;"
+	    COMMAND=$COMMAND"
+	    if [ ! -e \"$GOPKG\" ]; then
+		    wget https://storage.googleapis.com/golang/go1.7.3.linux-amd64.tar.gz;
+		    sudo tar -C /usr/local -xvzf go1.7.3.linux-amd64.tar.gz;
+		fi;"
 
 	    let counter=counter+1 
 	    ssh -t -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no $node "
@@ -49,6 +56,7 @@ then
 		fi
 		COMMAND=$COMMAND" export PATH=$PATH:/usr/local/go/bin;"
 	    COMMAND=$COMMAND" export GOPATH=\"$HOME/CS425-MP1\";"
+	    COMMAND=$COMMAND" rm vm*;"
 		COMMAND=$COMMAND" cd CS425-MP1/src;"
 		COMMAND=$COMMAND" fuser -k 8000/tcp;"
 		COMMAND=$COMMAND" nohup go run server/main.go > /dev/null 2>&1 &"

@@ -1,16 +1,16 @@
 package main
 
 import (
-	"net"
-	"log"
-	"fmt"
 	"bufio"
+	"fmt"
 	"grep"
+	"log"
+	"net"
 )
 
 func main() {
 
-	ln, err := net.Listen("tcp", ":8000")
+	ln, err := net.Listen("tcp", "localhost:8000")
 	if err != nil {
 		log.Println("Failed to connect to client\n")
 	}
@@ -28,7 +28,6 @@ func main() {
 	}
 }
 
-func SendOutput(connection net.Conn, grepOut []byte) {
-	out := string(grepOut)
-	fmt.Fprintf(connection, out + "\xFF")
+func SendOutput(connection net.Conn, grepOut string) {
+	fmt.Fprintf(connection, grepOut + "\xFF")
 }
