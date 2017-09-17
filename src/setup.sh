@@ -57,7 +57,7 @@ then
 		COMMAND=$COMMAND"if [ ! -e $DIRECTORY/src/machine.$counter.log ]; then
 			wget \"https://courses.engr.illinois.edu/cs425/fa2017/CS425_MP1_Demo_Logs_FA17/vm$counter.log\" >/dev/null
 			mv vm$counter.log \"machine.$counter.log\"
-			rm vm*
+			rm vm$counter.log*
 		fi;"
 		COMMAND=$COMMAND" fuser -k 8000/tcp;"
 		COMMAND=$COMMAND" nohup go run server/main.go > /dev/null 2>&1 &"
