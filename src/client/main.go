@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 	"regexp"
 	"io/ioutil"
 )
