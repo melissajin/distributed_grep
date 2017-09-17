@@ -84,13 +84,11 @@ func main() {
 
 	args := strings.Join(os.Args[1:], " ")
 
-	start := time.Now()
 	var wg sync.WaitGroup
-	for i := 1; i < 5; i++ {
+	for i := 1; i < 11; i++ {
 		wg.Add(1)
 
 		machineNum := strconv.Itoa(i)
-
 		fileName := "machine." + machineNum + ".log"
 		command := "grep " + args + " " + fileName
 
@@ -104,9 +102,5 @@ func main() {
 	}
 	wg.Wait()
 
-	end := time.Now()
-	elapsed := end.Sub(start)
-
-	fmt.Println(elapsed)
 	fmt.Printf("Total line count: %d\n", lineCount.x)
 }

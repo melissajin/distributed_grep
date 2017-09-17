@@ -18,12 +18,14 @@ func main() {
 
 	for {
 		conn, err := ln.Accept()
-		fmt.Println("Accepted connection")
 		if err != nil {
 			log.Println("Failed to accept client connection\n")
+			continue
 		}
+
+		fmt.Println("Accepted connection")
 		command, _ := bufio.NewReader(conn).ReadString('\n')
-		grepOut := grep.SearchFile(command)
+		grepOut := grep.Execute(command)
 		conn.Write([]byte(grepOut))
 		conn.Close()
 	}

@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func SearchFile(command string) string {
+func Execute(command string) string {
 	cmd := strings.Fields(command)
 	args := cmd[1:]
 

@@ -15,7 +15,7 @@ func TestGrep(t *testing.T) {
 	}
 
 	for _, table := range tables {
-		grepOut := SearchFile(table.command)
+		grepOut := Execute(table.command)
 		count, err := strconv.Atoi(grepOut[:len(grepOut) - len("\n1\n")])
 		if err != nil {
 			t.Errorf("Failed to retrieve line count")
