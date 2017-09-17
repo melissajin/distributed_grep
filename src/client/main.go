@@ -86,7 +86,7 @@ func main() {
 
 	start := time.Now()
 	var wg sync.WaitGroup
-	for i := 1; i < 11; i++ {
+	for i := 1; i < 5; i++ {
 		wg.Add(1)
 
 		machineNum := strconv.Itoa(i)
