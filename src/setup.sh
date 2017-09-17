@@ -55,7 +55,7 @@ then
 	    COMMAND=$COMMAND" export GOPATH=\"$HOME/CS425-MP1\";"
 		COMMAND=$COMMAND" cd CS425-MP1/src;"
 		COMMAND=$COMMAND"if [ ! -e $DIRECTORY/src/machine.$counter.log ]; then
-			wget \"https://courses.engr.illinois.edu/cs425/fa2017/CS425_MP1_Demo_Logs_FA17/vm$counter.log\" >/dev/null
+			wget -q \"https://courses.engr.illinois.edu/cs425/fa2017/CS425_MP1_Demo_Logs_FA17/vm$counter.log\"
 			mv vm$counter.log \"machine.$counter.log\"
 			rm vm*
 		fi;"
