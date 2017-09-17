@@ -10,6 +10,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"regexp"
+	"io/ioutil"
 )
 
 type Counter struct {
@@ -25,46 +27,37 @@ func (c *Counter) Add(x int) {
     c.mu.Unlock()
 }
 
-func ConnectToServer(args string, machineNum string, wg *sync.WaitGroup) {
+func ConnectToServer(command string, address string, wg *sync.WaitGroup) {
 	defer wg.Done()
-
-	fileName := "machine." + machineNum + ".log"
-	command := "grep " + args + " " + fileName
-
-	if(len(machineNum) == 1) {
-		machineNum = "0" + machineNum
-	}
-
-	address := "fa17-cs425-g46-" + machineNum + ".cs.illinois.edu:8000"
-	//address := "localhost:8000"
 
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
-		log.Printf("Failed to connect to machine %s\n", machineNum)
+		log.Printf("Failed to connect to machine %s\n", address)
 		return
 	}
 
 	defer conn.Close()
 
 	fmt.Fprintf(conn, command + "\n")
-	GetResult(conn, machineNum)
+	GetResult(conn, address)
 }
 
-func GetResult(connection net.Conn, machineNum string) {
-	header := "grep results for machine-" + machineNum + ":\n"
-	grepOut, _ := bufio.NewReader(connection).ReadString('\xFF')
-
-	out := header + grepOut[:len(grepOut)-1]
-	fields := strings.Fields(grepOut)
-	numLines := fields[len(fields)-2]
+func GetResult(connection net.Conn, address string) {
+	header := "grep results for machine " + address + ":\n"
+	grepOut, _ := ioutil.ReadAll(connection)
+	str := string(grepOut)
+	out := header + str
+	fields := strings.Fields(str)
+	numLines := fields[len(fields)-1]
 	num, _ := strconv.Atoi(numLines)
 	lineCount.Add(num)
 	
-	WriteToFile(out, machineNum)
-	fmt.Printf("Lines on machine %s: %s\n", machineNum, numLines)
+	WriteToFile(out, address)
+	fmt.Printf("Lines on machine %s: %s\n", address, numLines)
 }
 
-func WriteToFile(grepOut string, machineNum string) {
+func WriteToFile(grepOut string, address string) {
+	machineNum := ExtractMachineNum(address)
 	fileHandle, err := os.Create("grep_" + machineNum + "_out.txt")
 	if err != nil {
 	    log.Printf("Failed create output file for machine %s\n", machineNum)
@@ -78,6 +71,15 @@ func WriteToFile(grepOut string, machineNum string) {
 	writer.Flush()
 }
 
+func ExtractMachineNum(address string) string {
+	re, _ := regexp.Compile("-[0-9]+.")
+	str := re.FindString(address)
+	if str != "" {
+		str = str[1:len(str)-1]
+	}
+	return str
+}
+
 func main() {
 
 	args := strings.Join(os.Args[1:], " ")
@@ -86,7 +88,19 @@ func main() {
 	var wg sync.WaitGroup
 	for i := 1; i < 11; i++ {
 		wg.Add(1)
-		go ConnectToServer(args, strconv.Itoa(i), &wg)
+
+		machineNum := strconv.Itoa(i)
+
+		fileName := "machine." + machineNum + ".log"
+		command := "grep " + args + " " + fileName
+
+		if(len(machineNum) == 1) {
+			machineNum = "0" + machineNum
+		}
+
+		address := "fa17-cs425-g46-" + machineNum + ".cs.illinois.edu:8000"
+
+		go ConnectToServer(command, address, &wg)
 	}
 	wg.Wait()
 

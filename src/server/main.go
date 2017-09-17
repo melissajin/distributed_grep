@@ -24,10 +24,7 @@ func main() {
 		}
 		command, _ := bufio.NewReader(conn).ReadString('\n')
 		grepOut := grep.SearchFile(command)
-		SendOutput(conn, grepOut)
+		conn.Write([]byte(grepOut))
+		conn.Close()
 	}
-}
-
-func SendOutput(connection net.Conn, grepOut string) {
-	fmt.Fprintf(connection, grepOut + "\xFF")
 }
