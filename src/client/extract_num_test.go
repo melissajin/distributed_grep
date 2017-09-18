@@ -1,8 +1,8 @@
 package main
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 )
 
 func TestExtractNum(t *testing.T) {

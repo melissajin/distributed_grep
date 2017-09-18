@@ -1,13 +1,13 @@
 package main
 
 import (
-	"testing"
 	"fmt"
-	"os"
-	"net"
-	"sync"
 	"io/ioutil"
+	"net"
+	"os"
 	"strings"
+	"sync"
+	"testing"
 )
 
 func TestConnection(t *testing.T) {

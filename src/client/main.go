@@ -18,14 +18,27 @@ type Counter struct {
     x   int
 }
 
-var lineCount Counter
-
+/**
+ * Atomic add for type Counter
+ */
 func (c *Counter) Add(x int) {
     c.mu.Lock()
     c.x += x
     c.mu.Unlock()
 }
 
+/* This global variable keeps track of the total number of lines outputted
+   by grep from all the connected machines*/
+var lineCount Counter
+
+/**
+ * ConnectToServer - connects to a server, sends over grep command, and gets
+ * the output of grep from the server.
+ *
+ * @param {string} command - grep command to send to the server
+ * @param {string} address - address of server to connect to
+ * @param {sync.WaitGroup} wg - sync up multiple goroutines
+ */
 func ConnectToServer(command string, address string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -41,6 +54,14 @@ func ConnectToServer(command string, address string, wg *sync.WaitGroup) {
 	GetResult(conn, address)
 }
 
+/**
+ * GetResult - Retrieves the output of grep from the server and
+ * updates the lineCount Counter. Writes the output of grep to a
+ * file.
+ *
+ * @param {net.Conn} connection - connection to server
+ * @param {string} address - address of server
+ */
 func GetResult(connection net.Conn, address string) {
 	header := "grep results for machine " + address + ":\n"
 	grepOut, _ := ioutil.ReadAll(connection)
@@ -55,7 +76,16 @@ func GetResult(connection net.Conn, address string) {
 	fmt.Printf("Lines on machine %s: %s\n", address, numLines)
 }
 
-func WriteToFile(grepOut string, address string) {
+/**
+ * WriteToFile - Writes the content to a file named grep_i_out.txt,
+ * i corresponding to the machine number. Creates a new file if it
+ * does not  exist or overwrites an existing file.
+ *
+ * @param {string} content - content to write to file
+ * @param {string} address - address of server that produced the grep
+ * output. Used to create the filename. 
+ */
+func WriteToFile(content string, address string) {
 	machineNum := ExtractMachineNum(address)
 	fileHandle, err := os.Create("grep_" + machineNum + "_out.txt")
 	if err != nil {
@@ -66,10 +96,19 @@ func WriteToFile(grepOut string, address string) {
 	writer := bufio.NewWriter(fileHandle)
 	defer fileHandle.Close()
 
-	fmt.Fprintln(writer, grepOut);
+	fmt.Fprintln(writer, content);
 	writer.Flush()
 }
 
+/**
+ * ExtractMachineNum - Extracts the machine number given the address
+ * of the server it corresponds to. Addresses will always be in the form:
+ * "fa17-cs425-g46-XX.cs.illinois.edu". XX is the machine number to 
+ * be extracted.
+ *
+ * @param {string} address - address of machine
+ @ @return {string} number of the machine
+ */
 func ExtractMachineNum(address string) string {
 	re, _ := regexp.Compile("-[0-9]+.")
 	str := re.FindString(address)
@@ -79,6 +118,10 @@ func ExtractMachineNum(address string) string {
 	return str
 }
 
+/**
+ * Main entrypoint for the client. Constructs a grep command and 
+ * spawns 10 goroutines to connect to 10 servers. 
+ */
 func main() {
 
 	args := strings.Join(os.Args[1:], " ")

@@ -9,6 +9,14 @@ import (
 	"strings"
 )
 
+/**
+ * Execute - executes the grep command by calling the Unix grep.
+ * Counts the number of lines outputted by grep and appends the
+ * number to the end of the grep output.
+ *
+ * @param {string} command - grep command to be executed
+ * @return {string} output of grep with number of lines appended.
+ */
 func Execute(command string) string {
 	cmd := strings.Fields(command)
 	args := cmd[1:]
